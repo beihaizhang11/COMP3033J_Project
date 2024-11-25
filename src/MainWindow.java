@@ -22,6 +22,7 @@ import objects3D.TexSphere;
 import objects3D.Grid;
 import objects3D.Human;
 import objects3D.TexCube;
+import objects3D.SaturnRing;
 
 //Main windows class controls and creates the 3D virtual world , please do not change this class but edit the other classes to complete the assignment. 
 // Main window is built upon the standard Helloworld LWJGL class which I have heavily modified to use as your standard openGL environment. 
@@ -302,6 +303,16 @@ public class MainWindow {
 		glEnable(GL_LIGHT3); // switch light #0 on
 		glLight(GL_LIGHT3, GL_DIFFUSE, Utils.ConvertForGL(grey));
 
+		// 添加太阳光源
+		FloatBuffer sunLight = BufferUtils.createFloatBuffer(4);
+		sunLight.put(300f).put(400f).put(0f).put(1.0f).flip();
+
+		// 设置太阳光源属性
+		glLight(GL_LIGHT4, GL_POSITION, sunLight);
+		glLight(GL_LIGHT4, GL_DIFFUSE, Utils.ConvertForGL(new float[]{1.0f, 0.9f, 0.6f, 1.0f}));  // 暖黄色光
+		glLight(GL_LIGHT4, GL_AMBIENT, Utils.ConvertForGL(new float[]{0.2f, 0.2f, 0.2f, 1.0f}));
+		glEnable(GL_LIGHT4);
+
 		glEnable(GL_LIGHTING); // switch lighting on
 		glEnable(GL_DEPTH_TEST); // make sure depth buffer is switched
 									// on
@@ -347,8 +358,11 @@ public class MainWindow {
 	public void renderGL() {
 		changeOrth();
 
+		// 设置清除颜色为黑色
+		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		// 清除颜色缓冲区和深度缓冲区
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+
 		glColor3f(0.5f, 0.5f, 1.0f);
 
 		myDelta = getTime() - StartTime;
@@ -454,10 +468,13 @@ public class MainWindow {
 glPushMatrix();
 {
     TexSphere background = new TexSphere();
-    // 将背景放置在场景中心
     glTranslatef(300, 400, 0);
-    // 使用较大的缩放比例,确保背景包围整个场景
-    glScalef(1000f, 1000f, 1000f);
+    glScalef(420f, 420f, 420f);
+    
+    // 启用背面剔除
+    glEnable(GL_CULL_FACE);
+    // 剔除正面,只显示背面(内表面)
+    glCullFace(GL_FRONT);
     
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
     Color.white.bind();
@@ -465,14 +482,21 @@ glPushMatrix();
     glEnable(GL_TEXTURE_2D);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     
-    // 将球体内表面朝外
-    glCullFace(GL_FRONT);
     background.DrawTexSphere(1.0f, 32, 32, starsTexture);
+    
+    // 恢复默认设置
     glCullFace(GL_BACK);
+    glDisable(GL_CULL_FACE);
     
     glDisable(GL_TEXTURE_2D);
 }
 glPopMatrix();
+
+// 更新太阳光源位置
+FloatBuffer sunLightPosition = BufferUtils.createFloatBuffer(4);
+sunLightPosition.put(300f).put(400f).put(0f).put(1.0f).flip();
+glLight(GL_LIGHT4, GL_POSITION, sunLightPosition);
+
 		// 在人物中心添加一个带纹理的球体
 		glPushMatrix();
 		{
@@ -619,23 +643,43 @@ glPopMatrix();
 		}
 		glPopMatrix();
 
-		// 土星 (直径约为地球的9.5倍)
+		// 土星
 		glPushMatrix();
 		{
 			TexSphere saturn = new TexSphere();
+			SaturnRing saturnRing = new SaturnRing();
 			float saturnOrbit = theta * 0.3f;
-			float saturnX = (float) Math.cos(saturnOrbit) * 6200;
-			float saturnY = (float) Math.sin(saturnOrbit) * 6200;
+			float saturnX = (float) Math.cos(saturnOrbit) * 6000;
+			float saturnY = (float) Math.sin(saturnOrbit) * 6000;
 			
 			glTranslatef(300 + saturnX, 400 + saturnY, 0);
-			glScalef(380f, 380f, 380f);
 			
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-			Color.white.bind();
-			saturnTexture.bind();
-			glEnable(GL_TEXTURE_2D);
-			saturn.DrawTexSphere(1.0f, 32, 32, saturnTexture);
-			glDisable(GL_TEXTURE_2D);
+			// 绘制土星本体
+			glPushMatrix();
+			{
+				glScalef(120f, 120f, 120f);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+				Color.white.bind();
+				saturnTexture.bind();
+				glEnable(GL_TEXTURE_2D);
+				saturn.DrawTexSphere(1.0f, 32, 32, saturnTexture);
+				glDisable(GL_TEXTURE_2D);
+			}
+			glPopMatrix();
+			
+			// 绘制土星环
+			glPushMatrix();
+			{
+				// 稍微倾斜土星环
+				glRotatef(20, 1.0f, 0.0f, 0.0f);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+				Color.white.bind();
+				saturnringTexture.bind();
+				glEnable(GL_TEXTURE_2D);
+				saturnRing.DrawRing(150f, 250f, 64, saturnringTexture);
+				glDisable(GL_TEXTURE_2D);
+			}
+			glPopMatrix();
 		}
 		glPopMatrix();
 
@@ -698,6 +742,7 @@ glPopMatrix();
 	Texture starsTexture;
 	Texture uranusTexture;
 	Texture venusTexture;
+	Texture ringTexture;
 
 
 	/*
@@ -721,6 +766,7 @@ glPopMatrix();
 		starsTexture = TextureLoader.getTexture("JPG", ResourceLoader.getResourceAsStream("res/2k_stars_milky_way.jpg"));
 		uranusTexture = TextureLoader.getTexture("JPG", ResourceLoader.getResourceAsStream("res/2k_uranus.jpg"));
 		venusTexture = TextureLoader.getTexture("JPG", ResourceLoader.getResourceAsStream("res/2k_venus_surface.jpg"));
+		ringTexture = TextureLoader.getTexture("PNG", ResourceLoader.getResourceAsStream("res/2k_saturn_ring_alpha.png"));
 		
 		System.out.println("Textures loaded okay ");
 	}
