@@ -23,6 +23,7 @@ import objects3D.Grid;
 import objects3D.Human;
 import objects3D.TexCube;
 import objects3D.SaturnRing;
+import objects3D.SpaceShip;
 
 //Main windows class controls and creates the 3D virtual world , please do not change this class but edit the other classes to complete the assignment. 
 // Main window is built upon the standard Helloworld LWJGL class which I have heavily modified to use as your standard openGL environment. 
@@ -464,38 +465,11 @@ public class MainWindow {
 			//MyGlobe.DrawTexCube();
 			glPopMatrix();
 		}
-		// 绘制星空背景
-glPushMatrix();
-{
-    TexSphere background = new TexSphere();
-    glTranslatef(300, 400, 0);
-    glScalef(420f, 420f, 420f);
-    
-    // 启用背面剔除
-    glEnable(GL_CULL_FACE);
-    // 剔除正面,只显示背面(内表面)
-    glCullFace(GL_FRONT);
-    
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-    Color.white.bind();
-    starsTexture.bind();
-    glEnable(GL_TEXTURE_2D);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    
-    background.DrawTexSphere(1.0f, 32, 32, starsTexture);
-    
-    // 恢复默认设置
-    glCullFace(GL_BACK);
-    glDisable(GL_CULL_FACE);
-    
-    glDisable(GL_TEXTURE_2D);
-}
-glPopMatrix();
 
-// 更新太阳光源位置
-FloatBuffer sunLightPosition = BufferUtils.createFloatBuffer(4);
-sunLightPosition.put(300f).put(400f).put(0f).put(1.0f).flip();
-glLight(GL_LIGHT4, GL_POSITION, sunLightPosition);
+        // 更新太阳光源位置
+        FloatBuffer sunLightPosition = BufferUtils.createFloatBuffer(4);
+        sunLightPosition.put(300f).put(400f).put(0f).put(1.0f).flip();
+        glLight(GL_LIGHT4, GL_POSITION, sunLightPosition);
 
 		// 在人物中心添加一个带纹理的球体
 		glPushMatrix();
@@ -722,10 +696,27 @@ glLight(GL_LIGHT4, GL_POSITION, sunLightPosition);
 			glDisable(GL_TEXTURE_2D);
 		}
 		glPopMatrix();
+		// 绘制飞船
+		glPushMatrix();
+		{
+			SpaceShip ship = new SpaceShip(shipTexture);
+			float shipOrbit = theta * 0.5f;
+			float shipX = (float) Math.cos(shipOrbit) * 3200;
+			float shipY = (float) Math.sin(shipOrbit) * 2800;
+			
+			glTranslatef(300 + shipX, 400 + shipY, 0);
+			glRotatef(shipOrbit * 57.3f + 90, 0.0f, 0.0f, 1.0f);
+			glRotatef(90, 0.0f, 1.0f, 0.0f);
+			glScalef(80f, 80f, 80f);
+			
+			ship.drawSpaceShip(delta);
+		}
+		glPopMatrix();
 	}
 
 	public static void main(String[] argv) {
 		MainWindow hello = new MainWindow();
+		
 		hello.start();
 	}
 
@@ -743,6 +734,7 @@ glLight(GL_LIGHT4, GL_POSITION, sunLightPosition);
 	Texture uranusTexture;
 	Texture venusTexture;
 	Texture ringTexture;
+	Texture shipTexture;
 
 
 	/*
@@ -767,6 +759,7 @@ glLight(GL_LIGHT4, GL_POSITION, sunLightPosition);
 		uranusTexture = TextureLoader.getTexture("JPG", ResourceLoader.getResourceAsStream("res/2k_uranus.jpg"));
 		venusTexture = TextureLoader.getTexture("JPG", ResourceLoader.getResourceAsStream("res/2k_venus_surface.jpg"));
 		ringTexture = TextureLoader.getTexture("PNG", ResourceLoader.getResourceAsStream("res/2k_saturn_ring_alpha.png"));
+		shipTexture = TextureLoader.getTexture("PNG", ResourceLoader.getResourceAsStream("res/2k_sun.jpg"));
 		
 		System.out.println("Textures loaded okay ");
 	}
