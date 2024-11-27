@@ -36,6 +36,8 @@ public class MainWindow {
 	private boolean dragMode = false;
 	private boolean BadAnimation = true;
 	private boolean Earth = false;
+	private float cameraAngleHorizontal = 0.0f;  // 水平旋转角度
+    private float cameraAngleVertical = 30.0f;   // 垂直旋转角度(初始稍微向上)
 	/** position of pointer */
 	float x = 400, y = 300;
 	/** angle of rotation */
@@ -332,23 +334,24 @@ public class MainWindow {
 	}
 
 	public void changeOrth() {
-
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-		glOrtho(1200 - OrthoNumber, OrthoNumber, (800 - (OrthoNumber * 0.66f)), (OrthoNumber * 0.66f), 100000, -100000);
+		
+		// 修改正交投影参数，扩大视野范围
+		float aspect = 800.0f / 1200.0f;  // 保持宽高比
+		float viewSize = OrthoNumber * 2.0f;  // 扩大视野范围
+		
+		glOrtho(-viewSize, viewSize,           // 左右范围
+				-viewSize * aspect, viewSize * aspect,  // 上下范围（考虑宽高比）
+				-100000, 100000);              // 近远平面
+				
 		glMatrixMode(GL_MODELVIEW);
-
+		
 		FloatBuffer CurrentMatrix = BufferUtils.createFloatBuffer(16);
 		glGetFloat(GL_MODELVIEW_MATRIX, CurrentMatrix);
-
-		// if(MouseOnepressed)
-		// {
-
+		
 		MyArcball.getMatrix(CurrentMatrix);
-		// }
-
 		glLoadMatrix(CurrentMatrix);
-
 	}
 
 	/*
@@ -371,9 +374,55 @@ public class MainWindow {
 
 		// code to aid in animation
 		float theta = (float) (delta * 2 * Math.PI * 0.2);
+		float shipOrbit = theta * 0.5f;
 		float thetaDeg = delta * 360;
 		float posn_x = (float) Math.cos(theta); // same as your circle code in your notes
 		float posn_y = (float) Math.sin(theta);
+
+		// 添加相机控制代码 (在这里插入)
+		float shipX = (float) Math.cos(shipOrbit) * 3200;
+		float shipY = (float) Math.sin(shipOrbit) * 2800;
+
+		// 计算飞船运动方向的切线(后方视角)
+		float tangentX = (float) Math.sin(shipOrbit);
+		float tangentY = -(float) Math.cos(shipOrbit);
+
+		// 视角旋转控制
+		if (Keyboard.isKeyDown(Keyboard.KEY_LEFT)) {
+			cameraAngleHorizontal -= 2.0f;
+		}
+		if (Keyboard.isKeyDown(Keyboard.KEY_RIGHT)) {
+			cameraAngleHorizontal += 2.0f;
+		}
+		if (Keyboard.isKeyDown(Keyboard.KEY_UP)) {
+			cameraAngleVertical += 2.0f;
+			if (cameraAngleVertical > 89.0f) cameraAngleVertical = 89.0f;
+		}
+		if (Keyboard.isKeyDown(Keyboard.KEY_DOWN)) {
+			cameraAngleVertical -= 2.0f;
+			if (cameraAngleVertical < -89.0f) cameraAngleVertical = -89.0f;
+		}
+
+		// 计算相机位置
+		float radius = 5000.0f; // 增加相机距离
+		float horizontalRad = (float)Math.toRadians(cameraAngleHorizontal);
+		float verticalRad = (float)Math.toRadians(cameraAngleVertical);
+
+		// 计算相机位置，使其以飞船为中心
+		float camX = -300 + shipX + radius * (float)(Math.cos(verticalRad) * Math.sin(horizontalRad));
+		float camY = -400 + shipY + radius * (float)(Math.cos(verticalRad) * Math.cos(horizontalRad));
+		float camZ = radius * (float)Math.sin(verticalRad);
+
+		// 设置相机位置和视点
+		gluLookAt(
+			camX,                   // 相机位置X
+			camY,                   // 相机位置Y
+			camZ,                   // 相机位置Z
+			300 + shipX,           // 目标点X（飞船位置）
+			400 + shipY,           // 目标点Y（飞船位置）
+			0,                     // 目标点Z
+			0, 0, 1               // 上方向向量
+		);
 
 		/*
 		 * This code draws a grid to help you view the human models movement You may
@@ -407,7 +456,7 @@ public class MainWindow {
 			glRotatef(90, 0.0f, 1.0f, 0.0f);
 			// 最后在X轴旋转90度,使人物向前倾斜
 			glRotatef(90, 1.0f, 0.0f, 0.0f);
-			
+
 		} else {
 			// 坏动画版本
 			float angle = (float) Math.toDegrees(Math.atan2(posn_y, posn_x));
@@ -417,7 +466,7 @@ public class MainWindow {
 			glRotatef(90, 1.0f, 0.0f, 0.0f);
 		}
 
-		
+
 		MyHuman.drawHuman(delta, !BadAnimation); // give a delta for the Human object ot be animated
 
 		glPopMatrix();
@@ -479,14 +528,14 @@ public class MainWindow {
 			glTranslatef(300, 400, 0);
 			// 设置适当的缩放比例,使球体大小合适
 			glScalef(1320f, 1320f, 1320f);
-			
+
 			// 设置纹理参数
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 			Color.white.bind();
 			chestTexture.bind();  // 使用太阳纹理
 			glEnable(GL_TEXTURE_2D);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-			
+
 			// 绘制球体
 			centerSphere.DrawTexSphere(1.0f, 32, 32, chestTexture);
 			glDisable(GL_TEXTURE_2D);
@@ -500,10 +549,10 @@ public class MainWindow {
 			float mercuryOrbit = theta * 2.0f;
 			float mercuryX = (float) Math.cos(mercuryOrbit) * 1600;
 			float mercuryY = (float) Math.sin(mercuryOrbit) * 1600;
-			
+
 			glTranslatef(300 + mercuryX, 400 + mercuryY, 0);
 			glScalef(50f, 50f, 50f);
-			
+
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 			Color.white.bind();
 			mercuryTexture.bind();
@@ -520,10 +569,10 @@ public class MainWindow {
 			float venusOrbit = theta * 1.5f;
 			float venusX = (float) Math.cos(venusOrbit) * 2200;
 			float venusY = (float) Math.sin(venusOrbit) * 2200;
-			
+
 			glTranslatef(300 + venusX, 400 + venusY, 0);
 			glScalef(125f, 125f, 125f);
-			
+
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 			Color.white.bind();
 			venusTexture.bind();
@@ -540,9 +589,9 @@ public class MainWindow {
 			float earthOrbit = theta * 1.0f;
 			float earthX = (float) Math.cos(earthOrbit) * 3000;
 			float earthY = (float) Math.sin(earthOrbit) * 3000;
-			
+
 			glTranslatef(300 + earthX, 400 + earthY, 0);
-			
+
 			// 地球
 			glPushMatrix();
 			{
@@ -555,13 +604,13 @@ public class MainWindow {
 				glDisable(GL_TEXTURE_2D);
 			}
 			glPopMatrix();
-			
+
 			// 月球 (直径约为地球的0.27倍)
 			TexSphere moon = new TexSphere();
 			float moonOrbit = theta * 2.0f;
 			float moonX = (float) Math.cos(moonOrbit) * 200;
 			float moonY = (float) Math.sin(moonOrbit) * 200;
-			
+
 			glPushMatrix();
 			{
 				glTranslatef(moonX, moonY, 0);
@@ -584,10 +633,10 @@ public class MainWindow {
 			float marsOrbit = theta * 0.8f;
 			float marsX = (float) Math.cos(marsOrbit) * 3800;
 			float marsY = (float) Math.sin(marsOrbit) * 3800;
-			
+
 			glTranslatef(300 + marsX, 400 + marsY, 0);
 			glScalef(70f, 70f, 70f);
-			
+
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 			Color.white.bind();
 			marsTexture.bind();
@@ -604,10 +653,10 @@ public class MainWindow {
 			float jupiterOrbit = theta * 0.4f;
 			float jupiterX = (float) Math.cos(jupiterOrbit) * 5000;
 			float jupiterY = (float) Math.sin(jupiterOrbit) * 5000;
-			
+
 			glTranslatef(300 + jupiterX, 400 + jupiterY, 0);
 			glScalef(450f, 450f, 450f);
-			
+
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 			Color.white.bind();
 			headTexture.bind();  // 使用木星纹理
@@ -625,9 +674,9 @@ public class MainWindow {
 			float saturnOrbit = theta * 0.3f;
 			float saturnX = (float) Math.cos(saturnOrbit) * 6000;
 			float saturnY = (float) Math.sin(saturnOrbit) * 6000;
-			
+
 			glTranslatef(300 + saturnX, 400 + saturnY, 0);
-			
+
 			// 绘制土星本体
 			glPushMatrix();
 			{
@@ -640,7 +689,7 @@ public class MainWindow {
 				glDisable(GL_TEXTURE_2D);
 			}
 			glPopMatrix();
-			
+
 			// 绘制土星环
 			glPushMatrix();
 			{
@@ -664,10 +713,10 @@ public class MainWindow {
 			float uranusOrbit = theta * 0.2f;
 			float uranusX = (float) Math.cos(uranusOrbit) * 7400;
 			float uranusY = (float) Math.sin(uranusOrbit) * 7400;
-			
+
 			glTranslatef(300 + uranusX, 400 + uranusY, 0);
 			glScalef(160f, 160f, 160f);
-			
+
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 			Color.white.bind();
 			uranusTexture.bind();
@@ -684,10 +733,10 @@ public class MainWindow {
 			float neptuneOrbit = theta * 0.3f;
 			float neptuneX = (float) Math.cos(neptuneOrbit) * 8600;
 			float neptuneY = (float) Math.sin(neptuneOrbit) * 8600;
-			
+
 			glTranslatef(300 + neptuneX, 400 + neptuneY, 0);
 			glScalef(155f, 155f, 155f);
-			
+
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 			Color.white.bind();
 			bodyTexture.bind();  // 使用海王星纹理
@@ -700,15 +749,16 @@ public class MainWindow {
 		glPushMatrix();
 		{
 			SpaceShip ship = new SpaceShip(shipTexture);
-			float shipOrbit = theta * 0.5f;
-			float shipX = (float) Math.cos(shipOrbit) * 3200;
-			float shipY = (float) Math.sin(shipOrbit) * 2800;
-			
+            shipOrbit = theta * 0.5f;
+            shipX = (float) Math.cos(shipOrbit) * 3200;
+            shipY = (float) Math.sin(shipOrbit) * 2800;
+
 			glTranslatef(300 + shipX, 400 + shipY, 0);
 			glRotatef(shipOrbit * 57.3f + 90, 0.0f, 0.0f, 1.0f);
-			glRotatef(90, 0.0f, 1.0f, 0.0f);
+			glRotatef(90, 1.0f, 0.0f, 0.0f);                      // 修正为X轴旋转，而不是Y轴
+			glRotatef(90, 0.0f, 1.0f, 0.0f);                      // 修正为X轴旋转，而不是Y轴
 			glScalef(80f, 80f, 80f);
-			
+
 			ship.drawSpaceShip(delta);
 		}
 		glPopMatrix();
