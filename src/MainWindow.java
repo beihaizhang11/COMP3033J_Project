@@ -511,7 +511,7 @@ public class MainWindow {
 		glPushMatrix();
 		{
 			TexSphere centerSphere = new TexSphere();
-			// 将球体放置在人物旋��的中心点
+			// 将球体放置在人物旋转的中心点
 			glTranslatef(300, 400, 0);
 			// 设置适当的缩放比例,使球体大小合适
 			glScalef(1320f, 1320f, 1320f);
@@ -732,6 +732,27 @@ public class MainWindow {
 			glDisable(GL_TEXTURE_2D);
 		}
 		glPopMatrix();
+
+		// 陈茜行星 (在海王星轨道外)
+		glPushMatrix();
+		{
+			TexSphere cx = new TexSphere();
+			float cxOrbit = theta * 0.15f;  // 更慢的轨道速度
+			float cxX = (float) Math.cos(cxOrbit) * 9800;  // 更大的轨道半径
+			float cxY = (float) Math.sin(cxOrbit) * 9800;
+
+			glTranslatef(300 + cxX, 400 + cxY, 0);
+			glScalef(180f, 180f, 180f);  // 略大于海王星
+
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+			Color.white.bind();
+			cxTexture.bind();
+			glEnable(GL_TEXTURE_2D);
+			cx.DrawTexSphere(1.0f, 32, 32, cxTexture);
+			glDisable(GL_TEXTURE_2D);
+		}
+		glPopMatrix();
+
 		// 绘制飞船
 		glPushMatrix();
 		{
@@ -815,6 +836,7 @@ public class MainWindow {
 	Texture venusTexture;
 	Texture ringTexture;
 	Texture shipTexture;
+	Texture cxTexture;
 
 
 	/*
@@ -840,6 +862,7 @@ public class MainWindow {
 		venusTexture = TextureLoader.getTexture("JPG", ResourceLoader.getResourceAsStream("res/2k_venus_surface.jpg"));
 		ringTexture = TextureLoader.getTexture("PNG", ResourceLoader.getResourceAsStream("res/2k_saturn_ring_alpha.png"));
 		shipTexture = TextureLoader.getTexture("PNG", ResourceLoader.getResourceAsStream("res/enterprise.png"));
+		cxTexture = TextureLoader.getTexture("JPG", ResourceLoader.getResourceAsStream("res/ucd.png"));
 		
 		System.out.println("Textures loaded okay ");
 	}
