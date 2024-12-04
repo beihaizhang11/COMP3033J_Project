@@ -5,7 +5,7 @@ import org.lwjgl.opengl.GL11;
 
 public class Sphere {
 	// Method to draw a Sphere using OpenGL
-	public void drawSphere(float radius, int slices, int stacks) {
+	public static void drawSphere(float radius, int slices, int stacks) {
 		// Loop through each stack to draw the Sphere
 		for (int i = 0; i < stacks; i++) {
 			float lat0 = (float) Math.PI * (-0.5f + (float) (i) / stacks);

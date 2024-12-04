@@ -1,6 +1,7 @@
 import java.io.IOException;
 import java.nio.FloatBuffer;
 
+import objects3D.*;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.Sys;
@@ -18,12 +19,6 @@ import org.newdawn.slick.util.ResourceLoader;
 
 import GraphicsObjects.Arcball;
 import GraphicsObjects.Utils;
-import objects3D.TexSphere;
-import objects3D.Grid;
-import objects3D.Human;
-import objects3D.TexCube;
-import objects3D.SaturnRing;
-import objects3D.SpaceShip;
 
 //Main windows class controls and creates the 3D virtual world , please do not change this class but edit the other classes to complete the assignment. 
 // Main window is built upon the standard Helloworld LWJGL class which I have heavily modified to use as your standard openGL environment. 
@@ -438,37 +433,29 @@ public class MainWindow {
 			glPopMatrix();
 		}
 
+
+		// 绘制星空背景
 		glPushMatrix();
-		Human MyHuman = new Human(headTexture, bodyTexture, chestTexture);
-		glTranslatef(300, 400, 0);
-		glScalef(90f, 90f, 90f);
+		{
+			HollowSphere starSphere = new HollowSphere();
+			// 将背景球体中心设置在场景中心点
+			glTranslatef(300, 400, 0);
+			// 设置足够大的半径以包含所有行星
+			glScalef(12000f, 12000f, 12000f);
 
-		if (!BadAnimation) {
-			// 计算运动方向的角度
-			float angle = (float) Math.toDegrees(Math.atan2(posn_y, posn_x));
+			// 设置纹理参数
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-			// 增加移动半径
-			glTranslatef(posn_x * 20.0f, posn_y * 20.0f, 0.0f);
+			Color.white.bind();
+			starsTexture.bind();
+			glEnable(GL_TEXTURE_2D);
 
-			// 先旋转使人物面向运动方向
-			glRotatef(angle, 0.0f, 0.0f, 1.0f);
-			// 然后在Y轴旋转90度,使人物侧躺
-			glRotatef(90, 0.0f, 1.0f, 0.0f);
-			// 最后在X轴旋转90度,使人物向前倾斜
-			glRotatef(90, 1.0f, 0.0f, 0.0f);
-
-		} else {
-			// 坏动画版本
-			float angle = (float) Math.toDegrees(Math.atan2(posn_y, posn_x));
-			glTranslatef(posn_x * 20.0f, posn_y * 20.0f, 0.0f);
-			glRotatef(angle, 0.0f, 0.0f, 1.0f);
-			glRotatef(90, 0.0f, 1.0f, 0.0f);
-			glRotatef(90, 1.0f, 0.0f, 0.0f);
+			// 绘制星空球体
+			starSphere.drawHollowSphere(1.0f, 32, 32, starsTexture);
+			glDisable(GL_TEXTURE_2D);
 		}
-
-
-		MyHuman.drawHuman(delta, !BadAnimation); // give a delta for the Human object ot be animated
-
 		glPopMatrix();
 
 		// Add the sign rendering code here
@@ -524,7 +511,7 @@ public class MainWindow {
 		glPushMatrix();
 		{
 			TexSphere centerSphere = new TexSphere();
-			// 将球体放置在人物旋转的中心点
+			// 将球体放置在人物旋��的中心点
 			glTranslatef(300, 400, 0);
 			// 设置适当的缩放比例,使球体大小合适
 			glScalef(1320f, 1320f, 1320f);
@@ -762,6 +749,49 @@ public class MainWindow {
 			ship.drawSpaceShip(delta);
 		}
 		glPopMatrix();
+
+		// 绘制太空基地
+		glPushMatrix();
+		{
+			SpaceStation station = new SpaceStation();
+			float stationOrbit = theta * 0.02f; // 更慢的轨道速度
+			float stationX = (float) Math.cos(stationOrbit) * 3800;
+			float stationY = (float) Math.sin(stationOrbit) * 3800;
+			
+			// 将空间站移到太阳系平面上方
+			glTranslatef(300 + stationX, 400 + stationY, 800);
+			glRotatef(stationOrbit * 30, 0.0f, 0.0f, 1.0f);
+			glRotatef(45, 1.0f, 0.0f, 0.0f); // 倾斜45度
+			glScalef(200f, 200f, 200f);
+			
+			station.drawSpaceStation(getTime());
+		}
+		glPopMatrix();
+
+		// 绘制战斗机编队
+/*		for(int i = 0; i < 5; i++) {
+			glPushMatrix();
+			{
+				Fighter fighter = new Fighter(shipTexture);
+				float fighterOrbit = theta * 0.8f + i * ((float)(2.0f * Math.PI) / 5.0f);
+				float Fradius = 3500.0f;
+				float fighterX = (float) Math.cos(fighterOrbit) * Fradius;
+				float fighterY = (float) Math.sin(fighterOrbit) * Fradius;
+
+				// 在太阳系平面上方绕空间站飞行
+				glTranslatef(300 + fighterX, 400 + fighterY, 400);
+				// 使战机朝向运动方向
+				glRotatef((float)Math.toDegrees(fighterOrbit) + 90, 0.0f, 0.0f, 1.0f);
+				glRotatef(90, 1.0f, 0.0f, 0.0f);
+				// 让战机稍微倾斜,增加动感
+				glRotatef(20, 0.0f, 1.0f, 0.0f);
+				glScalef(50f, 50f, 50f);
+
+				fighter.drawFighter(getTime() + i * 0.5f);
+			}
+			glPopMatrix();
+		}*/
+
 	}
 
 	public static void main(String[] argv) {
@@ -805,11 +835,11 @@ public class MainWindow {
 		moonTexture = TextureLoader.getTexture("JPG", ResourceLoader.getResourceAsStream("res/2k_moon.jpg"));
 		saturnTexture = TextureLoader.getTexture("JPG", ResourceLoader.getResourceAsStream("res/2k_saturn.jpg"));
 		saturnringTexture = TextureLoader.getTexture("JPG", ResourceLoader.getResourceAsStream("res/2k_saturn_ring_alpha.png"));
-		starsTexture = TextureLoader.getTexture("JPG", ResourceLoader.getResourceAsStream("res/2k_stars_milky_way.jpg"));
+		starsTexture = TextureLoader.getTexture("JPG", ResourceLoader.getResourceAsStream("res/8k_stars_milky_way.jpg"));
 		uranusTexture = TextureLoader.getTexture("JPG", ResourceLoader.getResourceAsStream("res/2k_uranus.jpg"));
 		venusTexture = TextureLoader.getTexture("JPG", ResourceLoader.getResourceAsStream("res/2k_venus_surface.jpg"));
 		ringTexture = TextureLoader.getTexture("PNG", ResourceLoader.getResourceAsStream("res/2k_saturn_ring_alpha.png"));
-		shipTexture = TextureLoader.getTexture("PNG", ResourceLoader.getResourceAsStream("res/2k_sun.jpg"));
+		shipTexture = TextureLoader.getTexture("PNG", ResourceLoader.getResourceAsStream("res/enterprise.png"));
 		
 		System.out.println("Textures loaded okay ");
 	}
