@@ -753,6 +753,44 @@ public class MainWindow {
 		}
 		glPopMatrix();
 
+		// 彗星
+		glPushMatrix();
+		{
+			float cometTime = theta * 0.3f;
+			float cometX = (float) Math.cos(cometTime) * 7000;
+			float cometY = (float) Math.sin(cometTime) * 4000;
+			float cometZ = (float) Math.cos(cometTime * 2) * 1000;
+			
+			glTranslatef(300 + cometX, 400 + cometY, cometZ);
+			glRotatef(cometTime * 57.3f, 0.0f, 0.0f, 1.0f);
+			
+			// 彗星核心
+			glPushMatrix();
+			{
+				glScalef(40f, 40f, 40f);
+				glColor3f(0.8f, 0.8f, 1.0f);
+				Sphere.drawSphere(1.0f, 16, 16);
+			}
+			glPopMatrix();
+			
+			// 彗星尾
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			glBegin(GL_TRIANGLE_FAN);
+			glColor4f(0.6f, 0.6f, 1.0f, 0.8f);
+			glVertex3f(0, 0, 0);
+			glColor4f(0.6f, 0.6f, 1.0f, 0.0f);
+			for(int i = 0; i <= 32; i++) {
+				float angle = (float)(i * 2.0f * Math.PI / 32);
+				glVertex3f((float)Math.cos(angle) * 60,
+						  (float)Math.sin(angle) * 60,
+						  -400);
+			}
+			glEnd();
+			glDisable(GL_BLEND);
+		}
+		glPopMatrix();
+
 		// 绘制飞船
 		glPushMatrix();
 		{
