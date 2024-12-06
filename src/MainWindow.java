@@ -664,7 +664,7 @@ public class MainWindow {
 
 			glTranslatef(300 + saturnX, 400 + saturnY, 0);
 
-			// 绘制土星本体
+			// 绘��土星本体
 			glPushMatrix();
 			{
 				glScalef(120f, 120f, 120f);
@@ -850,6 +850,137 @@ public class MainWindow {
 			}
 			glPopMatrix();
 		}*/
+
+/*		// 绘制深空通讯站
+		glPushMatrix();
+		{
+			DeepSpaceAntenna antenna = new DeepSpaceAntenna();
+			// 放置在太阳系外围
+			float antennaOrbit = theta * 0.15f;
+			float antennaX = (float) Math.cos(antennaOrbit) * 8500;
+			float antennaY = (float) Math.sin(antennaOrbit) * 8500;
+			
+			glTranslatef(300 + antennaX, 400 + antennaY, 300);
+			glRotatef(antennaOrbit * 20, 0.0f, 0.0f, 1.0f);
+			glScalef(400f, 400f, 400f);
+			
+			antenna.drawAntenna(getTime());
+		}
+		glPopMatrix();*/
+
+/*		// 绘制量子计算核心
+		glPushMatrix();
+		{
+			QuantumCore core = new QuantumCore();
+			// 放置在中等轨道
+			float coreOrbit = theta * 0.4f;
+			float coreX = (float) Math.cos(coreOrbit) * 5000;
+			float coreY = (float) Math.sin(coreOrbit) * 5000;
+			
+			glTranslatef(300 + coreX, 400 + coreY, 0);
+			glScalef(300f, 300f, 300f);
+			
+			core.drawCore(getTime());
+		}
+		glPopMatrix();*/
+
+		// 绘制引力调制器 - 作为核心设施
+		glPushMatrix();
+		{
+			GravityModulator modulator = new GravityModulator();
+			// 在固定轨道上缓慢运动
+			float modulatorOrbit = theta * 0.3f;
+			float baseRadius = 3000.0f;
+			float modulatorX = (float) Math.cos(modulatorOrbit) * baseRadius;
+			float modulatorY = (float) Math.sin(modulatorOrbit) * baseRadius;
+			// 添加垂直运动
+			float heightOffset = (float)(Math.sin(theta) * 200.0f + 2500.0f);
+			
+			glTranslatef(300 + modulatorX, 400 + modulatorY, heightOffset);
+			// 让设备始终面向太阳
+			float rotationAngle = (float)(modulatorOrbit * 180.0f / Math.PI);
+			glRotatef(rotationAngle, 0.0f, 0.0f, 1.0f);
+			glRotatef(30.0f, 1.0f, 0.0f, 0.0f);
+			glScalef(250f, 250f, 250f);
+			
+			modulator.drawModulator(getTime());
+		}
+		glPopMatrix();
+
+		// 绘制粒子加速器 - 形成双环结构
+		glPushMatrix();
+		{
+			ParticleAccelerator accelerator = new ParticleAccelerator();
+			// 创建双环结构
+			for(int ring = 0; ring < 2; ring++) {
+				glPushMatrix();
+				{
+					float ringOffset = ring * (float)Math.PI; // 两环相位差180度
+					float acceleratorOrbit = theta * 0.4f + ringOffset;
+					float acceleratorRadius = 3500.0f + ring * 200.0f; // 第二环略大
+					float acceleratorX = (float) Math.cos(acceleratorOrbit) * acceleratorRadius;
+					float acceleratorY = (float) Math.sin(acceleratorOrbit) * acceleratorRadius;
+					// 螺旋上升运动
+					float acceleratorZ = 3000.0f + (float)Math.sin(theta * 2.0f + ringOffset) * 300.0f;
+					
+					glTranslatef(300 + acceleratorX, 400 + acceleratorY, acceleratorZ);
+					// 设备姿态随轨道变化
+					float orbitAngle = (float)(acceleratorOrbit * 180.0f / Math.PI);
+					glRotatef(orbitAngle, 0.0f, 0.0f, 1.0f);
+					glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+					// 添加轻微摆动
+					float wobble = (float)Math.sin(theta * 3.0f + ringOffset) * 15.0f;
+					glRotatef(wobble, 0.0f, 1.0f, 0.0f);
+					glScalef(300f, 300f, 300f);
+					
+					accelerator.drawAccelerator(getTime() + ring * 0.5f);
+				}
+				glPopMatrix();
+			}
+		}
+		glPopMatrix();
+
+		// 绘制全息投影仪 - 形成动态三角形阵列
+		glPushMatrix();
+		{
+			for(int i = 0; i < 3; i++) {
+				glPushMatrix();
+				{
+					float angleOffset = (float)(i * 2.0f * Math.PI / 3.0f);
+					float projectorOrbit = theta * 0.2f + angleOffset;
+					float projectorRadius = 4000.0f;
+					float projectorX = (float) Math.cos(projectorOrbit) * projectorRadius;
+					float projectorY = (float) Math.sin(projectorOrbit) * projectorRadius;
+					
+					// 三角形平面倾斜运动
+					float baseHeight = 3500.0f;
+					float waveHeight = (float)Math.sin(theta * 2.0f + angleOffset) * 200.0f;
+					float projectorZ = baseHeight + waveHeight;
+					
+					glTranslatef(300 + projectorX, 400 + projectorY, projectorZ);
+					
+					// 计算朝向中心的角度
+					float angleToCenter = (float)Math.atan2(projectorY - 400, projectorX - 300);
+					float facingAngle = (float)(angleToCenter * 180.0f / Math.PI) + 90.0f;
+					glRotatef(facingAngle, 0.0f, 0.0f, 1.0f);
+					
+					// 上下摆动
+					float tiltAngle = (float)Math.sin(theta * 1.5f + angleOffset) * 15.0f + 45.0f;
+					glRotatef(tiltAngle, 1.0f, 0.0f, 0.0f);
+					
+					// 自转
+					float spinAngle = theta * 30.0f + i * 120.0f;
+					glRotatef(spinAngle, 0.0f, 1.0f, 0.0f);
+					
+					glScalef(200f, 200f, 200f);
+					
+					HologramProjector projector = new HologramProjector();
+					projector.drawProjector(getTime() + i * 0.5f);
+				}
+				glPopMatrix();
+			}
+		}
+		glPopMatrix();
 
 	}
 
