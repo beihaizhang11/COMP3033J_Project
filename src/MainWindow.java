@@ -334,7 +334,7 @@ public class MainWindow {
 		
 		// 修改正交投影参数，扩大视野范围
 		float aspect = 800.0f / 1200.0f;  // 保持宽高比
-		float viewSize = OrthoNumber * 2.0f;  // 扩大视野范围
+		float viewSize = OrthoNumber * 4.0f;  // 扩大视野范围
 		
 		glOrtho(-viewSize, viewSize,           // 左右范围
 				-viewSize * aspect, viewSize * aspect,  // 上下范围（考虑宽高比）

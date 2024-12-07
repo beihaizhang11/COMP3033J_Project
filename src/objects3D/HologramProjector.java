@@ -7,9 +7,9 @@ public class HologramProjector {
     private Cylinder cylinder;
     private Sphere sphere;
     
-    private static final float[] BASE_METAL = {0.3f, 0.3f, 0.35f, 1.0f};
-    private static final float[] HOLO_BLUE = {0.2f, 0.6f, 1.0f, 0.4f};
-    private static final float[] LENS_GLOW = {0.0f, 0.8f, 1.0f, 1.0f};
+    private static final float[] BASE_METAL = {0.2f, 0.2f, 0.25f, 1.0f};
+    private static final float[] HOLO_BLUE = {0.1f, 0.3f, 0.5f, 0.3f};
+    private static final float[] LENS_GLOW = {0.0f, 0.4f, 0.5f, 1.0f};
     
     public HologramProjector() {
         cylinder = new Cylinder();
@@ -46,7 +46,7 @@ public class HologramProjector {
                         cylinder.drawCylinder(0.06f, 0.2f, 16);
                         
                         // 镜头发光效果
-                        float lensGlow = (float)Math.sin(time * 2 + i * 2) * 0.5f + 0.5f;
+                        float lensGlow = (float)Math.sin(time * 0.6f + i) * 0.3f + 0.7f;
                         glMaterial(GL_FRONT, GL_EMISSION, Utils.ConvertForGL(new float[]{
                             LENS_GLOW[0] * lensGlow,
                             LENS_GLOW[1] * lensGlow,
@@ -70,7 +70,7 @@ public class HologramProjector {
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             
-            float holoIntensity = (float)Math.sin(time) * 0.3f + 0.7f;
+            float holoIntensity = (float)Math.sin(time * 0.4f) * 0.2f + 0.8f;
             glMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, Utils.ConvertForGL(new float[]{
                 HOLO_BLUE[0],
                 HOLO_BLUE[1],
@@ -86,7 +86,7 @@ public class HologramProjector {
                 for(int i = 0; i < 8; i++) {
                     float height = i * 0.1f;
                     float scale = 1.0f - (height / 0.8f);
-                    float rotation = time * 100 + i * 45;
+                    float rotation = time * 40 + i * 45;
                     
                     glPushMatrix();
                     {

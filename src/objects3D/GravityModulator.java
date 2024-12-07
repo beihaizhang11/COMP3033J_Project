@@ -7,9 +7,9 @@ public class GravityModulator {
     private Cylinder cylinder;
     private Sphere sphere;
     
-    private static final float[] DEVICE_METAL = {0.5f, 0.5f, 0.6f, 1.0f};
-    private static final float[] GRAVITY_FIELD = {0.4f, 0.0f, 0.8f, 0.3f};
-    private static final float[] INDICATOR_LIGHT = {1.0f, 0.6f, 0.0f, 1.0f};
+    private static final float[] DEVICE_METAL = {0.4f, 0.4f, 0.5f, 1.0f};
+    private static final float[] GRAVITY_FIELD = {0.2f, 0.0f, 0.4f, 0.2f};
+    private static final float[] INDICATOR_LIGHT = {0.6f, 0.3f, 0.0f, 1.0f};
     
     public GravityModulator() {
         cylinder = new Cylinder();
@@ -49,7 +49,7 @@ public class GravityModulator {
                                 glRotatef(60 * j, 0.0f, 0.0f, 1.0f);
                                 glTranslatef(0.7f, 0.0f, 0.0f);
                                 
-                                float pulse = (float)(Math.sin(time * 3 + i + j) * 0.5 + 0.5);
+                                float pulse = (float)(Math.sin(time * 0.8f + i + j) * 0.3f + 0.7f);
                                 glMaterial(GL_FRONT, GL_EMISSION, Utils.ConvertForGL(new float[]{
                                     INDICATOR_LIGHT[0] * pulse,
                                     INDICATOR_LIGHT[1] * pulse,
@@ -77,7 +77,7 @@ public class GravityModulator {
                     glEnable(GL_BLEND);
                     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
                     
-                    float fieldIntensity = (float)(Math.sin(time) * 0.3 + 0.7);
+                    float fieldIntensity = (float)(Math.sin(time * 0.5f) * 0.2f + 0.8f);
                     glMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, Utils.ConvertForGL(new float[]{
                         GRAVITY_FIELD[0],
                         GRAVITY_FIELD[1],

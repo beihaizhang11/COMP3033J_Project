@@ -7,10 +7,10 @@ public class ParticleAccelerator {
     private Cylinder cylinder;
     private Sphere sphere;
     
-    private static final float[] METAL_DARK = {0.2f, 0.2f, 0.25f, 1.0f};
-    private static final float[] METAL_LIGHT = {0.7f, 0.7f, 0.75f, 1.0f};
-    private static final float[] ENERGY_BEAM = {0.0f, 0.8f, 1.0f, 0.6f};
-    private static final float[] WARNING_RED = {1.0f, 0.2f, 0.0f, 1.0f};
+    private static final float[] METAL_DARK = {0.15f, 0.15f, 0.2f, 1.0f};
+    private static final float[] METAL_LIGHT = {0.5f, 0.5f, 0.55f, 1.0f};
+    private static final float[] ENERGY_BEAM = {0.0f, 0.4f, 0.5f, 0.4f};
+    private static final float[] WARNING_RED = {0.6f, 0.1f, 0.0f, 1.0f};
     
     public ParticleAccelerator() {
         cylinder = new Cylinder();
@@ -80,7 +80,7 @@ public class ParticleAccelerator {
                                 cylinder.drawCylinder(0.08f, 0.4f, 16);
                                 
                                 // 警示灯
-                                float warning = (float)Math.sin(time * 5 + i) * 0.5f + 0.5f;
+                                float warning = (float)Math.sin(time * 0.7f + i) * 0.3f + 0.7f;
                                 glMaterial(GL_FRONT, GL_EMISSION, Utils.ConvertForGL(new float[]{
                                     WARNING_RED[0] * warning,
                                     WARNING_RED[1] * warning,
@@ -105,7 +105,7 @@ public class ParticleAccelerator {
                 glEnable(GL_BLEND);
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
                 
-                float beamIntensity = (float)Math.sin(time * 3) * 0.3f + 0.7f;
+                float beamIntensity = (float)Math.sin(time * 0.9f) * 0.2f + 0.8f;
                 glMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, Utils.ConvertForGL(new float[]{
                     ENERGY_BEAM[0],
                     ENERGY_BEAM[1],
@@ -116,7 +116,7 @@ public class ParticleAccelerator {
                 // 环形光束
                 glPushMatrix();
                 {
-                    glRotatef(time * 720 % 360, 0.0f, 0.0f, 1.0f);
+                    glRotatef(time * 360 % 360, 0.0f, 0.0f, 1.0f);
                     for(int i = 0; i < 360; i += 5) {
                         glPushMatrix();
                         {
